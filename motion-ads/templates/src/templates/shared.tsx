@@ -30,17 +30,19 @@ export type AudioProps = {
   music?: string; // e.g. "music.wav" from make_music.py
   musicVol?: number;
   captions?: boolean; // word-by-word captions from public/<wordsFile>
+  captionStyle?: 'clean' | 'creator'; // creator = YouTuber/CapCut look (see references/human-style.md)
+  captionsFrom?: number; // seconds; hide captions before this (e.g. during a hook text)
   wordsFile?: string;
   sfx?: boolean; // needs public/sfx from make_sfx.py
   rtl?: boolean;
 };
 
-export const AudioAndCaptions: React.FC<AudioProps & {cues: Cue[]; end: number}> = ({cues, end, sfx = true, captions, wordsFile, rtl = true, ...a}) => {
+export const AudioAndCaptions: React.FC<AudioProps & {cues: Cue[]; end: number}> = ({cues, end, sfx = true, captions, captionStyle, captionsFrom, wordsFile, rtl = true, ...a}) => {
   const words = useWords(captions ? wordsFile ?? 'narration.words.json' : '__none__.json');
   return (
     <>
       <SoundTrack cues={sfx ? cues : []} end={end} narration={a.narration} speech={a.speech} music={a.music} musicVol={a.musicVol} />
-      {captions && <Captions words={words} rtl={rtl} />}
+      {captions && <Captions words={words} rtl={rtl} variant={captionStyle ?? 'clean'} from={captionsFrom} />}
     </>
   );
 };

@@ -7,6 +7,7 @@ import {NewsShort, newsDuration, newsExample} from './templates/NewsShort';
 import {Top5, top5Duration, top5Example} from './templates/Top5';
 import {ProductAd, productAdDuration, productAdExample} from './templates/ProductAd';
 import {ChannelPromo, channelPromoDuration, channelPromoExample} from './templates/ChannelPromo';
+import {CreatorShort, creatorDuration, creatorExample} from './templates/CreatorShort';
 
 // One composition per format, so `npx remotion render <Id>-Square` etc. gives every format.
 // Scenes use useLayout() to re-arrange per format. Delete the templates you don't use.
@@ -14,6 +15,8 @@ import {ChannelPromo, channelPromoDuration, channelPromoExample} from './templat
 const withQA = (C: React.FC<any>) => (props: any) => <QAGuard><C {...props} /></QAGuard>;
 
 const ALL: {id: string; component: React.FC<any>; duration: number; props: any; fromProps?: (p: any) => number}[] = [
+  // Human-edited look, footage first (default for creator/channel content)
+  {id: 'Creator', component: withQA(CreatorShort), duration: creatorDuration(creatorExample), props: creatorExample, fromProps: creatorDuration},
   {id: 'News', component: withQA(NewsShort), duration: newsDuration(newsExample), props: newsExample, fromProps: newsDuration},
   {id: 'Top5', component: withQA(Top5), duration: top5Duration(top5Example), props: top5Example, fromProps: top5Duration},
   {id: 'ProductAd', component: withQA(ProductAd), duration: productAdDuration, props: productAdExample},

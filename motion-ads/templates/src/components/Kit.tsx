@@ -100,6 +100,7 @@ export const localFrame = (sceneStart: number, overlap = 0.4) => (t: number) => 
 export const PEAK: Record<string, number> = {
   'sfx/riser.wav': 27, 'sfx/boom.wav': 0, 'sfx/ching.wav': 0, 'sfx/ching-low.wav': 0, 'sfx/shimmer.wav': 2,
   'sfx/tick.wav': 0, 'sfx/pop.wav': 0, 'sfx/swoosh.wav': 5, 'sfx/buzz.wav': 0,
+  'sfx/whip.wav': 4, 'sfx/thud.wav': 0, 'sfx/scratch.wav': 4, 'sfx/ding.wav': 0,
 };
 export type Cue = {t: number; file: string; vol: number; trim?: number};
 /** A sound placed so its PEAK lands on visual time t (seconds). */

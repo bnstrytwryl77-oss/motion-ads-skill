@@ -56,7 +56,7 @@ def phrases(path: str, min_pause: float, thr_ratio: float):
 def estimate_words(segs, text):
     """Spread the script's words over speech time (pauses excluded), proportional to length."""
     import json  # noqa
-    words = text.split()
+    words = [w for w in text.split() if not (w.startswith('[') and w.endswith(']'))]  # skip [audio tags]
     total_speech = sum(e - s for s, e in segs)
     weights = [len(w) + 1.5 for w in words]
     scale = total_speech / sum(weights)

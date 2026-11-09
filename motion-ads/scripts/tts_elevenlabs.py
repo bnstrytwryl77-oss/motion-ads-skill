@@ -4,7 +4,7 @@ Requires the user's own API key in the environment variable ELEVENLABS_API_KEY
 (set it yourself; never paste keys into chat or commit them). No dependencies.
 
 Usage:
-    python tts_elevenlabs.py SCRIPT.txt public/narration.mp3 [--voice "Roger"] [--model eleven_v3] [--stability 0.5]
+    python tts_elevenlabs.py SCRIPT.txt public/narration.mp3 [--voice "Roger"] [--model eleven_v3] [--stability 0.35]
 
 --voice accepts a voice name from your ElevenLabs library or a voice_id.
 Writes the MP3 and public/narration.words.json: [{"word", "start", "end"}, ...] (seconds),
@@ -13,6 +13,10 @@ plus narration.phrases.json grouped at sentence punctuation. Use the words file 
 
 Script tips: write numbers as words, transliterate English names into the target language,
 one short paragraph per scene. Hebrew needs a model that supports it (eleven_v3).
+To sound HUMAN (not "AI voice"): stability 0.3-0.4 (default 0.35), vary sentence length, write how
+the creator talks (first person, slang, questions), use "..." for real pauses and eleven_v3 audio tags
+in square brackets such as [excited], [laughs], [whispers], [sighs], [surprised] at a few key moments.
+Audio tags are not spoken; the alignment JSON may contain them, so captions skip [bracketed] words.
 """
 import base64
 import json
@@ -46,6 +50,11 @@ def resolve_voice(name_or_id, key):
         if v['name'].lower().startswith(low):
             return v['voice_id']
     sys.exit(f'Voice "{name_or_id}" not found. Available: ' + ', '.join(v['name'] for v in voices[:30]))
+
+
+def strip_tags(words):
+    """Drop eleven_v3 audio tags like [excited] from the word list (they are not spoken)."""
+    return [w for w in words if not (w['word'].startswith('[') and w['word'].endswith(']'))]
 
 
 def to_words(al):
@@ -92,14 +101,14 @@ def main():
     text = open(script_path, encoding='utf8').read().strip()
     voice = resolve_voice(args.get('--voice', 'Roger'), key)
     body = {'text': text, 'model_id': args.get('--model', 'eleven_v3'),
-            'voice_settings': {'stability': float(args.get('--stability', 0.5)), 'similarity_boost': 0.75}}
+            'voice_settings': {'stability': float(args.get('--stability', 0.35)), 'similarity_boost': 0.75}}
     res = call(f'/text-to-speech/{voice}/with-timestamps?output_format=mp3_44100_128', key, body)
     with open(out_mp3, 'wb') as f:
         f.write(base64.b64decode(res['audio_base64']))
     al = res.get('normalized_alignment') or res.get('alignment')
     base = out_mp3.rsplit('.', 1)[0]
     if al:
-        words = to_words(al)
+        words = strip_tags(to_words(al))
         json.dump(words, open(base + '.words.json', 'w', encoding='utf8'), ensure_ascii=False, indent=1)
         json.dump(to_phrases(words), open(base + '.phrases.json', 'w', encoding='utf8'), ensure_ascii=False, indent=1)
         print(f'{out_mp3}: {len(words)} words, ends at {words[-1]["end"]:.2f}s')

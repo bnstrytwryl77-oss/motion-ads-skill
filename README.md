@@ -4,11 +4,12 @@ A [Claude Code](https://claude.com/claude-code) skill that turns a one-line requ
 
 Built on [Remotion](https://www.remotion.dev) (React → video). Full Hebrew / RTL support.
 
-> **עברית:** סקיל ל-Claude Code שיוצר פרסומות, שורטים וסרטוני טיקטוק ברמה של After Effects — טקסט מונפש, תלת־ממד, מעברים, קריינות מסונכרנת, כתוביות מילה-במילה, מוזיקה ואפקטים — בכל הפורמטים, עם תמונה ממוזערת ובדיקת איכות אוטומטית, ומרנדר ל-MP4 אמיתי. תמיכה מלאה בעברית.
+> **עברית:** סקיל ל-Claude Code שיוצר פרסומות, שורטים וסרטוני טיקטוק שנראים כאילו עורך אמיתי ערך אותם (ולא AI) או ברמה של After Effects — טקסט מונפש, תלת־ממד, מעברים, קריינות מסונכרנת, כתוביות מילה-במילה, מוזיקה ואפקטים — בכל הפורמטים, עם תמונה ממוזערת ובדיקת איכות אוטומטית, ומרנדר ל-MP4 אמיתי. תמיכה מלאה בעברית.
 
 ## What it does
 
-- **4 ready-made templates** — News/explainer Short, Top 5 countdown, 15s Product ad, Channel promo (glitch). Data-driven: fill a JSON, render.
+- **Looks human-made, not AI-made** — a creator style built from real editing grammar: footage first, jump cuts on the voice, zoom punches, freeze frames with a record-scratch, hand-drawn circles/arrows, stickers, screenshot proof, YouTuber captions, subtle handheld camera. Plus an anti-AI guide (`references/human-style.md`) listing the tells of generated videos and how to avoid them.
+- **5 ready-made templates** — Creator Short (footage-first), News/explainer Short, Top 5 countdown, 15s Product ad, Channel promo (glitch). Data-driven: fill a JSON, render.
 - **Every format from one project** — Vertical 9:16, Square 1:1, Landscape 16:9; layouts re-arrange per format instead of cropping.
 - **Thumbnails** — click-worthy 1280×720 and Shorts covers from the same brand system.
 - **Automatic narration** — `tts_elevenlabs.py` generates the voice-over through the ElevenLabs API *with exact word timings* (your own API key); or bring any MP3 and `detect_pauses.py` times it.
@@ -55,7 +56,7 @@ Top 5 budget gaming mice — vertical and landscape versions.
 ```
 motion-ads/
 ├── SKILL.md                         # the workflow Claude follows
-├── references/                      # motion principles, scene snippets
+├── references/                      # human-style (anti-AI guide), motion principles, scene snippets
 ├── scripts/
 │   ├── tts_elevenlabs.py            # narration + exact word timings (ElevenLabs API)
 │   ├── detect_pauses.py             # any narration → phrases (+ estimated word times)
@@ -66,8 +67,8 @@ motion-ads/
     ├── Root.tsx, index.ts           # every template × 3 formats + thumbnails
     ├── theme.ts                     # colors, fonts, easing, useLayout()
     ├── Thumbnail.tsx
-    ├── templates/                   # NewsShort, Top5, ProductAd, ChannelPromo, shared scenes
-    └── components/                  # Background, Text, Coin, Icons, Kit, Captions, QAGuard, transitions
+    ├── templates/                   # CreatorShort, NewsShort, Top5, ProductAd, ChannelPromo, shared scenes
+    └── components/                  # Creator, Background, Text, Coin, Icons, Kit, Captions, QAGuard, transitions
 ```
 
 ## Notes

@@ -1,4 +1,5 @@
-"""Synthesizes royalty-free sound effects (riser, boom, coin ching, shimmer, tick, pop, swoosh, buzz).
+"""Synthesizes royalty-free sound effects (riser, boom, coin ching, shimmer, tick, pop, swoosh, buzz,
+plus creator-style whip, thud, scratch, ding).
 Pure Python, no dependencies. Usage: python make_sfx.py [output_dir]  (default: ./public/sfx)"""
 import array
 import math
@@ -123,6 +124,44 @@ def buzz(sec=0.2, f=110):
     return lowpass(out, [3000] * len(out))
 
 
+def whip(sec=0.28):
+    """Fast whip-pan swoosh: noise band sweeping up then down."""
+    N = n(sec)
+    noise = [random.uniform(-1, 1) for _ in range(N)]
+    cut = [800 + 7000 * math.sin(math.pi * i / N) ** 2 for i in range(N)]
+    nf = lowpass(noise, cut)
+    return [nf[i] * math.sin(math.pi * i / N) ** 1.5 for i in range(N)]
+
+
+def thud(sec=0.5):
+    """Short low hit for zoom punches / reveals (not a copy of any meme sound)."""
+    out, ph = [], 0.0
+    for i in range(n(sec)):
+        t = i / SR
+        ph += 2 * math.pi * (48 + 70 * math.exp(-t * 25)) / SR
+        out.append(math.tanh(2.2 * math.sin(ph) * math.exp(-t * 7)) + random.uniform(-1, 1) * math.exp(-t * 90) * 0.4)
+    return out
+
+
+def scratch(sec=0.45):
+    """Record-scratch style 'wait, what?' for freeze frames: noisy resonant zig-zag pitch."""
+    N = n(sec)
+    out, ph, y1, y2 = [], 0.0, 0.0, 0.0
+    for i in range(N):
+        t = i / N
+        f = 300 + 1500 * abs(math.sin(math.pi * 3.2 * t))
+        r, w = 0.97, 2 * math.pi * f / SR
+        x = random.uniform(-1, 1)
+        y = x + 2 * r * math.cos(w) * y1 - r * r * y2
+        y2, y1 = y1, y
+        out.append(y * (1 - t) ** 0.6)
+    return out
+
+
+def ding(sec=0.9, f=1320):
+    return [(math.sin(2 * math.pi * f * i / SR) + 0.35 * math.sin(2 * math.pi * f * 2.76 * i / SR)) * math.exp(-i / SR * 6) * min(1, i / SR * 3000) for i in range(n(sec))]
+
+
 save('riser.wav', riser(), 0.8)
 save('boom.wav', boom(), 0.95)
 save('ching.wav', ching(), 0.8)
@@ -132,3 +171,7 @@ save('tick.wav', tick(), 0.7)
 save('pop.wav', pop(), 0.85)
 save('swoosh.wav', swoosh(), 0.8)
 save('buzz.wav', buzz(), 0.6)
+save('whip.wav', whip(), 0.8)
+save('thud.wav', thud(), 0.9)
+save('scratch.wav', scratch(), 0.6)
+save('ding.wav', ding(), 0.6)
