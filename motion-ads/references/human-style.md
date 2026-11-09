@@ -45,6 +45,9 @@ channel, gaming, reviews, news, vlogs). Keep the polished motion-graphics style 
 ## Footage sources (rights!)
 The user's own gameplay recordings / replays (Fortnite: Replay mode, NVIDIA/AMD/Xbox Game Bar clips), their own screen recordings, their own photos and facecam, screenshots of official sources for commentary. Don't rip other creators' videos. Official trailers only short, with commentary, and only if the user accepts that risk.
 
+## Footage gotcha
+`qa.py` only sees text the video *draws*, not text burned into the footage pixels. Never reuse finished videos (with captions/stickers baked in) as footage under new captions — render a clean version (`captions: false`, no stickers) or use raw clips/images. Always check the contact sheet for clashing burned-in text.
+
 ## Checklist before render
 - [ ] >60% of the runtime shows real footage/images, not generated shapes.
 - [ ] No gradient-blob backgrounds in footage scenes; ≤1 sticker/emoji per beat.
