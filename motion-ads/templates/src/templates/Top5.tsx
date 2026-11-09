@@ -31,13 +31,13 @@ const Rank: React.FC<{n: number; at: number}> = ({n, at}) => {
   );
 };
 
-const EntryScene: React.FC<{e: Top5Entry; rtl: boolean}> = ({e, rtl}) => {
+const EntryScene: React.FC<{e: Top5Entry; rtl: boolean; total: number}> = ({e, rtl, total}) => {
   const at = localFrame(e.start);
   return (
     <TopicScene
       rtl={rtl}
       big={<Rank n={e.rank} at={at(e.start) + 2} />}
-      topic={{start: e.start, tint: e.tint ?? (['night', 'red', 'ocean', 'gold'] as Tint[])[e.rank % 4], num: `#${e.rank}`, tag: 'TOP 5', icon: e.icon ?? 'trophy',
+      topic={{start: e.start, tint: e.tint ?? (['night', 'red', 'ocean', 'gold'] as Tint[])[e.rank % 4], num: `#${e.rank}`, tag: `TOP ${total}`, icon: e.icon ?? 'trophy',
         title: {t: e.nameT, text: e.name, highlight: [e.name.split(' ').slice(-1)[0]]}, items: e.details.map((d) => ({...d}))}}
     />
   );
@@ -55,7 +55,7 @@ export const Top5: React.FC<Top5Props> = (p) => {
     <AbsoluteFill style={{background: 'black'}}>
       <CaptionRoom on={p.captions}><Timeline end={p.end} scenes={[
         {start: 0, node: <HookScene h={p.hook} rtl={rtl} />},
-        ...p.entries.map((e) => ({start: e.start, node: <EntryScene e={e} rtl={rtl} />})),
+        ...p.entries.map((e) => ({start: e.start, node: <EntryScene e={e} rtl={rtl} total={p.entries.length} />})),
         {start: p.outro.start, node: <OutroScene o={p.outro} rtl={rtl} />},
       ]} /></CaptionRoom>
       <ProgressBar total={sec(p.end)} rtl={rtl} />

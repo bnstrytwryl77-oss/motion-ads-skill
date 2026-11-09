@@ -21,7 +21,7 @@ export type Shot = {
   punches?: {t: number; scale?: number; hold?: number; x?: number; y?: number}[]; // t = seconds; hold = seconds
   freeze?: {t: number; dur: number; label?: string}; // "look at this" moment
   marks?: (Omit<Mark, 't'> & {t: number})[];
-  stickers?: {t: number; text: string; x: number; y: number; rot?: number; color?: string; hard?: boolean; until?: number}[]; // until = seconds
+  stickers?: {t: number; text: string; x: number; y: number; rot?: number; color?: string; textColor?: string; size?: number; hard?: boolean; until?: number}[]; // until = seconds
   screenshot?: {t: number; src: string; width?: number; rot?: number; highlight?: {x: number; y: number; w: number; h: number}}; // width in % of frame (default 92 vertical)
   hook?: {text: string; highlight?: string}; // big text on the very first shot
   handheld?: boolean;
