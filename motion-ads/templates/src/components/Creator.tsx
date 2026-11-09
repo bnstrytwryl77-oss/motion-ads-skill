@@ -39,8 +39,8 @@ export const ZoomPunch: React.FC<{punches: Punch[]; children: React.ReactNode}> 
   return <AbsoluteFill style={{transform: `scale(${s})`, transformOrigin: `${ox}% ${oy}%`}}>{children}</AbsoluteFill>;
 };
 
-/** Full-frame footage (video or image). `blurfill` = vertical frame with a 16:9 clip centered over a blurred copy. */
-export const Footage: React.FC<{src: string; kind?: 'video' | 'image'; from?: number; speed?: number; fit?: 'cover' | 'blurfill'; volume?: number; grade?: boolean}> = ({
+/** Full-frame footage (video or image). `blurfill` = vertical frame with a 16:9 clip centered over a blurred copy; `blur` = only the blurred copy (background for screenshot cards). */
+export const Footage: React.FC<{src: string; kind?: 'video' | 'image'; from?: number; speed?: number; fit?: 'cover' | 'blurfill' | 'blur'; volume?: number; grade?: boolean}> = ({
   src, kind, from = 0, speed = 1, fit = 'cover', volume = 0, grade = true,
 }) => {
   const {fps} = useVideoConfig();
@@ -53,6 +53,13 @@ export const Footage: React.FC<{src: string; kind?: 'video' | 'image'; from?: nu
     );
   const look: React.CSSProperties = grade ? {filter: 'contrast(1.06) saturate(1.08)'} : {};
   if (fit === 'cover') return <AbsoluteFill style={look}>{media({width: '100%', height: '100%', objectFit: 'cover'})}</AbsoluteFill>;
+  if (fit === 'blur') {
+    return (
+      <AbsoluteFill style={{background: 'black'}}>
+        <AbsoluteFill style={{filter: 'blur(36px) brightness(0.5) saturate(1.2)', transform: 'scale(1.25)'}}>{media({width: '100%', height: '100%', objectFit: 'cover'}, true)}</AbsoluteFill>
+      </AbsoluteFill>
+    );
+  }
   return (
     <AbsoluteFill style={{background: 'black', ...look}}>
       <AbsoluteFill style={{filter: 'blur(40px) brightness(0.55)', transform: 'scale(1.2)'}}>{media({width: '100%', height: '100%', objectFit: 'cover'}, true)}</AbsoluteFill>
@@ -141,18 +148,20 @@ export const HandMark: React.FC<{m: Mark}> = ({m}) => {
 
 // ---------- stickers & proof ----------
 /** Tilted label with a white border (cut-out sticker). `hard` = appears on the cut with no animation. */
-export const Sticker: React.FC<{text: string; at: number; x: number; y: number; rot?: number; color?: string; textColor?: string; size?: number; hard?: boolean; rtl?: boolean}> = ({
-  text, at, x, y, rot = -3, color = '#FFE600', textColor = '#111', size = 64, hard, rtl = true,
+export const Sticker: React.FC<{text: string; at: number; until?: number; x: number; y: number; rot?: number; color?: string; textColor?: string; size?: number; hard?: boolean; rtl?: boolean}> = ({
+  text, at, until, x, y, rot = -3, color = '#FFE600', textColor = '#111', size = 64, hard, rtl = true,
 }) => {
   const f = useCurrentFrame();
   const {fps, width, height} = useVideoConfig();
-  if (f < at) return null;
+  if (f < at || (until !== undefined && f >= until)) return null;
+  // numbers/English only ("1 / 700,000") must stay left-to-right even in a Hebrew video
+  const dir = /[֐-׿؀-ۿ]/.test(text) ? (rtl ? 'rtl' : 'ltr') : 'ltr';
   const u = Math.min(width, height) / 1080;
   const s = hard ? 1 : spring({frame: f - at, fps, config: {damping: 9, stiffness: 220}});
   return (
     <div style={{position: 'absolute', left: `${x}%`, top: `${y}%`, transform: `translate(-50%,-50%) rotate(${rot}deg) scale(${s})`,
       background: color, color: textColor, fontFamily: theme.font, fontWeight: 900, fontSize: size * u, padding: `${8 * u}px ${24 * u}px`,
-      border: `${7 * u}px solid white`, borderRadius: 14 * u, boxShadow: '0 10px 0 rgba(0,0,0,0.25), 0 18px 40px rgba(0,0,0,0.45)', whiteSpace: 'nowrap', direction: rtl ? 'rtl' : 'ltr'}}>
+      border: `${7 * u}px solid white`, borderRadius: 14 * u, boxShadow: '0 10px 0 rgba(0,0,0,0.25), 0 18px 40px rgba(0,0,0,0.45)', whiteSpace: 'nowrap', direction: dir}}>
       {text}
     </div>
   );

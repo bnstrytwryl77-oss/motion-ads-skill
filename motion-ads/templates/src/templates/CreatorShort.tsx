@@ -16,13 +16,13 @@ export type Shot = {
   src: string; // file in public/: gameplay clip, screen recording, photo, facecam
   from?: number; // seconds into the source clip
   speed?: number; // 1.5–2 to speed through boring parts
-  fit?: 'cover' | 'blurfill'; // blurfill: 16:9 clip on a 9:16 frame
+  fit?: 'cover' | 'blurfill' | 'blur'; // blurfill: 16:9 clip on a 9:16 frame; blur: blurred background only (use with screenshot)
   enter?: 'cut' | 'flash' | 'whip';
   punches?: {t: number; scale?: number; hold?: number; x?: number; y?: number}[]; // t = seconds; hold = seconds
   freeze?: {t: number; dur: number; label?: string}; // "look at this" moment
   marks?: (Omit<Mark, 't'> & {t: number})[];
-  stickers?: {t: number; text: string; x: number; y: number; rot?: number; color?: string; hard?: boolean}[];
-  screenshot?: {t: number; src: string; highlight?: {x: number; y: number; w: number; h: number}};
+  stickers?: {t: number; text: string; x: number; y: number; rot?: number; color?: string; hard?: boolean; until?: number}[]; // until = seconds
+  screenshot?: {t: number; src: string; width?: number; rot?: number; highlight?: {x: number; y: number; w: number; h: number}}; // width in % of frame (default 92 vertical)
   hook?: {text: string; highlight?: string}; // big text on the very first shot
   handheld?: boolean;
 };
@@ -42,10 +42,10 @@ const ShotView: React.FC<{s: Shot; rtl: boolean; vol: number}> = ({s, rtl, vol})
   const body = (
     <AbsoluteFill style={{background: 'black', overflow: 'hidden'}}>
       {cam}
-      {s.screenshot && <ScreenshotCard src={s.screenshot.src} at={L(s.screenshot.t)} highlight={s.screenshot.highlight ? {...s.screenshot.highlight, t: 12} : undefined} />}
+      {s.screenshot && <ScreenshotCard src={s.screenshot.src} at={L(s.screenshot.t)} width={s.screenshot.width ?? 92} rot={s.screenshot.rot ?? -2} highlight={s.screenshot.highlight ? {...s.screenshot.highlight, t: 12} : undefined} />}
       {(s.marks ?? []).map((m, i) => <HandMark key={i} m={{...m, t: L(m.t)}} />)}
-      {s.freeze?.label && <Sticker text={s.freeze.label} at={L(s.freeze.t)} x={50} y={40} rot={-4} color="#FF2B2B" textColor="white" hard rtl={rtl} />}
-      {(s.stickers ?? []).map((st, i) => <Sticker key={i} {...st} at={L(st.t)} rtl={rtl} />)}
+      {s.freeze?.label && <Sticker text={s.freeze.label} at={L(s.freeze.t)} until={L(s.freeze.t + s.freeze.dur)} x={50} y={40} rot={-4} color="#FF2B2B" textColor="white" hard rtl={rtl} />}
+      {(s.stickers ?? []).map((st, i) => <Sticker key={i} {...st} at={L(st.t)} until={st.until !== undefined ? L(st.until) : undefined} rtl={rtl} />)}
       {s.hook && <HookText text={s.hook.text} highlight={s.hook.highlight} rtl={rtl} />}
       <Flash at={[0, ...(s.freeze ? [L(s.freeze.t)] : [])].filter((a, i) => i > 0 || s.enter === 'flash')} />
       <Grain opacity={0.04} />
