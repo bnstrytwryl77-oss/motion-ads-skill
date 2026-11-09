@@ -37,3 +37,23 @@ export const useUnit = () => {
   const {width, height} = useVideoConfig();
   return Math.min(width, height) / 1080;
 };
+
+// Layout helper for multi-format renders (one composition -> Vertical / Square / Landscape).
+// Use `L.u` to scale sizes, `L.vertical` etc. to re-arrange (not just crop), and `L.safe` for margins.
+export const useLayout = () => {
+  const {width: w, height: h} = useVideoConfig();
+  const u = Math.min(w, h) / 1080;
+  const vertical = h / w > 1.3;
+  const landscape = w / h > 1.3;
+  return {
+    w, h, u, vertical, landscape, square: !vertical && !landscape,
+    // keep text out of platform UI: top 12% / bottom 18% on vertical
+    safe: vertical ? {top: h * 0.12, bottom: h * 0.18, side: w * 0.06} : {top: h * 0.08, bottom: h * 0.1, side: w * 0.06},
+  };
+};
+
+export const FORMATS = {
+  Vertical: {width: 1080, height: 1920},
+  Square: {width: 1080, height: 1080},
+  Landscape: {width: 1920, height: 1080},
+} as const;

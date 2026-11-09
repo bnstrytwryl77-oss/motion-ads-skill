@@ -1,7 +1,11 @@
 """Finds the spoken phrases in a narration file so scenes can be timed to the voice.
 
 Usage:
-    python detect_pauses.py narration.mp3 [min_pause_seconds=0.22] [threshold=0.04]
+    python detect_pauses.py narration.mp3 [min_pause_seconds=0.22] [threshold=0.04] [--words SCRIPT.txt]
+
+With --words, also writes narration.words.json with ESTIMATED per-word timings (words are
+spread over the detected speech in proportion to their length, never across a pause) and
+narration.phrases.json — good enough for word-by-word captions when the TTS gave no alignment.
 
 Prints each phrase as "start-end" in seconds. Decodes with ffmpeg if it is on PATH,
 otherwise with Remotion's bundled one (`npx remotion ffmpeg`, run inside a Remotion project).
@@ -49,15 +53,47 @@ def phrases(path: str, min_pause: float, thr_ratio: float):
     return out, len(rms) / 100
 
 
+def estimate_words(segs, text):
+    """Spread the script's words over speech time (pauses excluded), proportional to length."""
+    import json  # noqa
+    words = text.split()
+    total_speech = sum(e - s for s, e in segs)
+    weights = [len(w) + 1.5 for w in words]
+    scale = total_speech / sum(weights)
+    out, si, t = [], 0, segs[0][0]
+    for w, wt in zip(words, weights):
+        d = wt * scale
+        # move to the next phrase if this word would mostly fall into a pause
+        while si < len(segs) - 1 and t + d / 2 > segs[si][1]:
+            si += 1
+            t = max(t, segs[si][0])
+        out.append({'word': w, 'start': round(t, 3), 'end': round(min(t + d, segs[si][1]), 3)})
+        t += d
+    return out
+
+
 if __name__ == '__main__':
     if len(sys.argv) < 2:
         sys.exit(__doc__)
-    src = sys.argv[1]
-    min_pause = float(sys.argv[2]) if len(sys.argv) > 2 else 0.22
-    thr = float(sys.argv[3]) if len(sys.argv) > 3 else 0.04
+    argv = sys.argv[1:]
+    words_src = None
+    if '--words' in argv:
+        k = argv.index('--words')
+        words_src = argv[k + 1]
+        argv = argv[:k] + argv[k + 2:]
+    src = argv[0]
+    min_pause = float(argv[1]) if len(argv) > 1 else 0.22
+    thr = float(argv[2]) if len(argv) > 2 else 0.04
     tmp = os.path.join(tempfile.mkdtemp(), 'vo.wav')
     decode(src, tmp)
     segs, total = phrases(tmp, min_pause, thr)
     print(f'length {total:.2f}s, {len(segs)} phrases')
     for s, e in segs:
         print(f'{s:.2f}-{e:.2f}')
+    if words_src:
+        import json
+        words = estimate_words(segs, open(words_src, encoding='utf8').read())
+        base = src.rsplit('.', 1)[0]
+        json.dump(words, open(base + '.words.json', 'w', encoding='utf8'), ensure_ascii=False, indent=1)
+        json.dump([{'start': s, 'end': e} for s, e in segs], open(base + '.phrases.json', 'w', encoding='utf8'), indent=1)
+        print(f'wrote {base}.words.json ({len(words)} words, estimated) and {base}.phrases.json')
